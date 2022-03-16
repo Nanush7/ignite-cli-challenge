@@ -1,4 +1,7 @@
-from colorama import init, Fore
+import os
+
+from colorama import Fore, init
+
 
 class Output:
     """
@@ -10,20 +13,20 @@ class Output:
             self.colors = {
                 'red': Fore.LIGHTRED_EX,
                 'green': Fore.GREEN,
-                'yellow': Fore.YELLOW,
-                'white': Fore.LIGHTWHITE_EX
+                'yellow': Fore.YELLOW
             }
         else:
             self.colors = {
                 'red': '',
                 'green': '',
-                'yellow': '',
-                'white': ''
+                'yellow': ''
             }
         self.colors.update({'reset': Fore.RESET})
 
+    # Log messages.
+
     def info(self, msg: str) -> None:
-        print(self.colors['white'] + 'INFO::' + self.colors['reset'] + msg)
+        print('INFO::' + msg)
 
     def success(self, msg: str) -> None:
         print(self.colors['green'] + 'OK::' + self.colors['reset'] + msg)
@@ -33,3 +36,16 @@ class Output:
 
     def error(self, msg: str) -> None:
         print(self.colors['red'] + 'ERROR::' + self.colors['reset'] + msg)
+
+    # Just colored output.
+    def red(self, msg: str) -> None:
+        print(self.colors['red'] + msg)
+
+    def clear(self) -> None:
+        """
+        Clear console screen.
+        """
+        if os.name == 'nt':
+            os.system('cls')
+        else:
+            os.system('clear')
