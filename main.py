@@ -47,6 +47,7 @@ def main():
     api_key = args.api_key
 
     cli = CLI(out, api_key)
+    print('')
     cli.run()
 
 if __name__ == '__main__':

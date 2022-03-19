@@ -1,6 +1,8 @@
 from os.path import exists
+from typing import Dict
 
 from src.config import API_KEY_PATH
+from src.plugins import BasePlugin
 
 
 class CLI:
@@ -10,6 +12,7 @@ class CLI:
     def __init__(self, out, api_key: str = None):
         self.out = out
         self.api_key = api_key
+        self.plugins = []
 
     def banner(self):
         banner_art = '''
@@ -47,10 +50,69 @@ class CLI:
 
         return api_key
 
+    def get_plugins(self) -> Dict[str, BasePlugin]:
+        """
+        Get list of plugins.
+        """
+        plugins = []
+        for plugin in BasePlugin.plugin_list:
+            try:
+                instance = plugin()
+                self.out.success(f'"{plugin.name}" loaded.')
+            except Exception:
+                self.out.warning(f'Could not import "{plugin.name}" plugin.')
+            else:
+                plugins.append(plugin)
+
+        return plugins
+
     def menu(self):
-        print('Options:')
-        for index, option in enumerate(option_list):
-            print(f'[{index + 1}] {option}')
+        # Print banner.
+        self.banner()
+
+        # Mostrar opciones.
+        self.out.blue('''
+Options:
+    => type 'd' to get a description of all the plugins available.
+    => type 'exit' to exit.
+        ''')
+        for index, plugin in enumerate(self.plugins):
+            self.out.yellow(f' {[index + 1]} {plugin.name}')
+
+        # Pedir elección al usuario hasta
+        # que proporcione una opción correcta.
+        while True:
+            choice = input('\n--> ').lower()
+
+            # Terminar ejecución.
+            if choice == 'exit' or choice == 'quit':
+                print('Quitting...')
+                exit(0)
+
+            # Mostrar descripciones para los plugins cargados.
+            elif choice == 'd':
+                for plugin in self.plugins:
+                    print(f'{plugin.name}: {plugin.description}')
+
+            # Ejecutar opción.
+            else:
+                try:
+                    index = int(choice) - 1
+                    if index < 0:
+                        raise IndexError
+                    # Ejecutar la opción de la lista de plugins.
+                    self.plugins[index]().run()
+                    # Volver al menú.
+                    break
+                except (IndexError, ValueError):
+                    # Validar que la opción sea un int >= 1.
+                    self.out.yellow('Invalid option. Try again.')
 
     def run(self):
-        self.banner()
+        self.out.info('Loading plugins.')
+        self.plugins = self.get_plugins()
+        while True:
+            # Pausar para que el usuario vea los resultados
+            # antes de limpiar la pantalla de la consola.
+            input('\nPress enter to continue...')
+            self.menu()
