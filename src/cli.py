@@ -1,8 +1,11 @@
 from os.path import exists
 from typing import Dict
 
+from src.client import PrometeoClient
 from src.config import API_KEY_PATH
+from src.exceptions import MissingAPIKey
 from src.plugins import BasePlugin
+from utils import query_yes_no
 
 
 class CLI:
@@ -12,6 +15,7 @@ class CLI:
     def __init__(self, out, api_key: str = None):
         self.out = out
         self.api_key = api_key
+        self.environment = 'sandbox'
         self.plugins = []
 
     def banner(self):
@@ -34,15 +38,18 @@ class CLI:
         """
         if not exists(API_KEY_PATH) or request_change:
 
-            print(f'Please, enter you api key (it will be saved in {API_KEY_PATH}).')
+            print(f'Please, enter you api key.')
             print('You may provide your key using the -k argument instead (Not recommended).')
             api_key = input('Your API key (leave blank to cancel): ')
 
             if not api_key:
-                return None
+                raise MissingAPIKey
 
-            with open(API_KEY_PATH, 'w') as file:
-                file.write(api_key)
+            save = query_yes_no(f'Save API key? (it will be saved in {API_KEY_PATH})')
+
+            if save:
+                with open(API_KEY_PATH, 'w') as file:
+                    file.write(api_key)
 
         else:
             with open(API_KEY_PATH, 'r') as file:
@@ -70,20 +77,25 @@ class CLI:
         # Print banner.
         self.banner()
 
+        # Mostrar environment activo.
+        # TODO.
+
         # Mostrar opciones.
         self.out.blue('''
 Options:
     => type 'd' to get a description of all the plugins available.
+    => type 'c' to change the current environment.
     => type 'exit' to exit.
         ''')
         for index, plugin in enumerate(self.plugins):
-            self.out.yellow(f' {[index + 1]} {plugin.name}')
+            self.out.yellow(f' >> {[index + 1]} {plugin.name}')
 
         # Pedir elección al usuario hasta
         # que proporcione una opción correcta.
         while True:
             choice = input('\n--> ').lower()
 
+            # Opciones #
             # Terminar ejecución.
             if choice == 'exit' or choice == 'quit':
                 print('Quitting...')
@@ -94,7 +106,7 @@ Options:
                 for plugin in self.plugins:
                     print(f'{plugin.name}: {plugin.description}')
 
-            # Ejecutar opción.
+            # Ejecutar plugin.
             else:
                 try:
                     index = int(choice) - 1
@@ -109,8 +121,16 @@ Options:
                     self.out.yellow('Invalid option. Try again.')
 
     def run(self):
+        # Obtener plugins.
         self.out.info('Loading plugins.')
         self.plugins = self.get_plugins()
+
+        # Pedir api_key al usuario
+        # y obtener el cliente de Prometeo.
+        self.out.info('Creating Prometeo client.')
+        self.api_key = self.get_api_key()
+        self.client = PrometeoClient(self.api_key)
+
         while True:
             # Pausar para que el usuario vea los resultados
             # antes de limpiar la pantalla de la consola.
