@@ -15,25 +15,22 @@ class BasePlugin:
     def __init_subclass__(cls):
         """
         Añadir a plugins las clases que hereden de
-        la clase BasePlugin y validar atributos y métodos
-        obligatorios.
+        la clase BasePlugin.
         """
-        mandatory = {
-            'name': cls.name,
-            'description': cls.description,
-            'run': cls.run
-        }
-
-        for key, value in mandatory.items():
-            if not value:
-                raise exceptions.MissingAttribute(key)
-
         cls.plugin_list.append(cls)
 
-    def get_name(self) -> str:
+    def __init__(self, client):
+        self._client = client
+
+    def _get_name(self) -> str:
         return self.name
 
+    def _check(self):
+        if self.name is None or self.description is None:
+            raise exceptions.MissingAttribute
+
     def run(self) -> None: ...
+
 
 # Utilidad para cargar módulos automáticamente.
 def load_module(path):

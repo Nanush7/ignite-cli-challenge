@@ -49,6 +49,9 @@ class Output:
     def blue(self, msg: str) -> None:
         print(self.colors['blue'] + msg)
 
+    def green(self, msg: str) -> None:
+        print(self.colors['green'] + msg)
+
     def clear(self) -> None:
         """
         Clear console screen.

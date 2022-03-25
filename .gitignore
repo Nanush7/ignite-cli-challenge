@@ -130,5 +130,5 @@ dmypy.json
 
 # Other
 requisitos.txt
-api_key
+*api_key
 .vscode/
