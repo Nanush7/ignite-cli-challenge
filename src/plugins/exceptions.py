@@ -1,10 +1,10 @@
 """
 Plugin exception classes.
 """
-class MissingAttribute(Exception):
+class MissingMethod(Exception):
     """
-    Se usa cuando falta algún atributo
-    obglitario al crear una subclase de BasePlugin.
+    Se usa cuando falta implementar algún método
+    requerido al crear una subclase de BasePlugin.
     """
     def __init__(self, missing_attribute):
         self.message = f'Missing {missing_attribute} attribute.'

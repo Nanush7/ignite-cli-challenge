@@ -9,8 +9,8 @@ class BasePlugin:
     Base plugin class.
     """
     plugin_list = []
-    name: str = None
-    description: str = None
+    name: str = 'Unknown'  # Si no se provee un nombre.
+    description: str = 'No description.'  # Si no se provee una descripción.
 
     def __init_subclass__(cls):
         """
@@ -26,8 +26,8 @@ class BasePlugin:
         return self.name
 
     def _check(self):
-        if self.name is None or self.description is None:
-            raise exceptions.MissingAttribute
+        if not callable(getattr(self.__class__, 'run', None)):
+            raise exceptions.MissingMethod
 
     def run(self) -> None: ...
 
