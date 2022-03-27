@@ -1,16 +1,18 @@
+import abc
 import os
 from importlib import util
 
-from . import exceptions
+from src.client import PrometeoClient
+from src.utils import Utils
 
 
-class BasePlugin:
+class BasePlugin(metaclass=abc.ABCMeta):
     """
     Base plugin class.
     """
     plugin_list = []
-    name: str = 'Unknown'  # Si no se provee un nombre.
-    description: str = 'No description.'  # Si no se provee una descripción.
+    name: str = 'Unknown'  # Default.
+    description: str = 'No description.'
 
     def __init_subclass__(cls):
         """
@@ -19,17 +21,14 @@ class BasePlugin:
         """
         cls.plugin_list.append(cls)
 
-    def __init__(self, client):
+    def __init__(self, client, output):
         self._client = client
+        self.out = output
+        self.utils = Utils()
 
-    def _get_name(self) -> str:
-        return self.name
-
-    def _check(self):
-        if not callable(getattr(self.__class__, 'run', None)):
-            raise exceptions.MissingMethod
-
-    def run(self) -> None: ...
+    @abc.abstractmethod
+    def run(self, client: PrometeoClient) -> PrometeoClient:
+        raise NotImplementedError
 
 
 # Utilidad para cargar módulos automáticamente.

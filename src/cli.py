@@ -1,12 +1,11 @@
 from os.path import exists
-from typing import Dict
+from typing import List
 
+import src.config as config
 from src.client import ExtendedBankingClient, PrometeoClient
-from src.config import API_KEY_PATH, DEFAULT_ENVIRONMENT
 from src.exceptions import MissingAPIKey
 from src.plugins import BasePlugin
-
-from .utils import query_yes_no
+from src.utils import Utils
 
 
 class CLI:
@@ -16,11 +15,14 @@ class CLI:
     def __init__(self, out, api_key: str = ''):
         self.out = out
         self.api_key = api_key
-        self.environment = DEFAULT_ENVIRONMENT
+        self.environment = config.DEFAULT_ENVIRONMENT
         self.env_list = [
             key for key in ExtendedBankingClient.ENVIRONMENTS.keys()]
         self.plugins = []
+
+        # TODO: se van.
         self.client = None
+        self.utils = Utils()
 
     def banner(self):
         banner_art = '''
@@ -33,14 +35,13 @@ class CLI:
         self.out.clear()
         self.out.red(banner_art)
 
-    @staticmethod
-    def get_api_key(request_change: bool = False) -> str:
+    def get_api_key(self, request_change: bool = False) -> str:
         """
         Si se está utilizando por primera vez,
         pedirle al usuario el api key de Prometeo, el cual
         se puede guardar en .api_key
         """
-        if not exists(API_KEY_PATH) or request_change:
+        if not exists(config.API_KEY_PATH) or request_change:
 
             print(f'Please, enter you api key.')
             print('You may provide your key using the -k argument instead (Not recommended).')
@@ -50,31 +51,28 @@ class CLI:
                 raise MissingAPIKey
 
             # Por defecto es 'no', por razones de seguridad.
-            save = query_yes_no(f'Save API key? (it will be saved in {API_KEY_PATH})', 'no')
+            save = self.utils.query_yes_no(f'Save API key? (it will be saved in {config.API_KEY_PATH})', 'no')
 
             if save:
-                with open(API_KEY_PATH, 'w') as file:
+                with open(config.API_KEY_PATH, 'w') as file:
                     file.write(api_key.strip())
 
         else:
-            with open(API_KEY_PATH, 'r') as file:
+            with open(config.API_KEY_PATH, 'r') as file:
                 api_key = file.readline()
 
         return api_key
 
-    def get_plugins(self) -> Dict[str, BasePlugin]:
+    def get_plugins(self) -> List[BasePlugin]:
         """
         Get list of plugins.
         """
         plugins = []
         for plugin in BasePlugin.plugin_list:
             try:
-                instance = plugin(self.client)
-                instance._check()
+                instance = plugin(self.client, self.out)
                 self.out.success(f'<{plugin.name}> loaded.')
             except Exception:
-                if plugin.name is None:
-                    plugin.name = 'Unknown'
                 self.out.warning(f'Could not import <{plugin.name}> plugin.')
             else:
                 plugins.append(instance)
@@ -91,14 +89,11 @@ class CLI:
             print(f'[{index+1}] {env}.')
 
         # Ask for an option and change environment.
-        try:
-            option = int(input('--> '))
-            if option < 1:
-                raise ValueError
+        option = int(input('--> '))
+        if option < 1:
+            raise ValueError
 
-            self.environment = self.env_list[option-1]
-        except (ValueError, IndexError):
-            self.print_invalid_option()
+        self.environment = self.client.environment = self.env_list[option-1]
 
     def print_invalid_option(self) -> None:
         """
@@ -129,6 +124,20 @@ Options:
 
         print('')
 
+        # Mostrar estado de la session.
+        print('  Status => ', end='')
+        status = self.client.status
+        if status == config.LOGGED_OUT_STATUS:
+            self.out.red('Logged out')
+        elif status == config.LOGGED_IN_STATUS:
+            self.out.green('Logged in')
+        elif status == config.PROMETEO_ERROR_STATUS:
+            self.out.red('Prometeo error')
+        else:
+            self.out.red(status)
+
+        print('')
+
         # Mostrar plugins.
         for index, plugin in enumerate(self.plugins):
             self.out.yellow(f' >> {[index + 1]} {plugin.name}')
@@ -143,7 +152,8 @@ Options:
 
             # Opciones #
             # Terminar ejecución.
-            if choice == 'exit' or choice == 'quit':
+            if choice in ('exit', 'quit'):
+                # TODO: Cerrar sesión.
                 print('Quitting...')
                 exit(0)
 
@@ -159,7 +169,7 @@ Options:
             # Cambiar api key.
             elif choice == 'k':
                 try:
-                    self.api_key = CLI.get_api_key(True)
+                    self.api_key = self.client.api_key = self.get_api_key(True)
                 except MissingAPIKey:
                     pass
 
@@ -169,11 +179,13 @@ Options:
                     index = int(choice) - 1
                     if index < 0:
                         raise IndexError
+
                     # Ejecutar la opción de la lista de plugins.
-                    self.plugins[index].run()
+                    # Los plugins manipulan el objeto client (sí, suena feo).
+                    # Le agregar o modifican datos.
+                    self.plugins[index].run(self.client)
 
                 except (IndexError, ValueError):
-                    # Validar que la opción sea un int >= 1.
                     self.print_invalid_option()
                     continue
 
@@ -186,8 +198,8 @@ Options:
         self.out.info('Creating Prometeo client.')
         if not self.api_key:
             # (si no se agregó -k)
-            self.api_key = CLI.get_api_key()
-        self.client = PrometeoClient(self.api_key)
+            self.api_key = self.get_api_key()
+        self.client = PrometeoClient(self.api_key, self.environment)
         self.out.success(f'Created API client with {self.environment} scope.')
 
         # Obtener plugins.
