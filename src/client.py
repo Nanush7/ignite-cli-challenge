@@ -1,6 +1,7 @@
+from typing import List
 from prometeo.banking.client import BankingAPIClient
-
-from src.config import LOGGED_OUT_STATUS
+import prometeo
+from src.config import LOGGED_IN_STATUS, LOGGED_OUT_STATUS
 
 SANDBOX_URL = 'https://banking.sandbox.prometeoapi.com/'
 TESTING_URL = 'https://test.prometeo.qualia.uy'
@@ -42,8 +43,8 @@ class PrometeoClient:
 
     @environment.setter
     def environment(self, env):
-        self._environment = env
         self.logout()
+        self._environment = env
         self._banking._environment = env
 
     @property
@@ -52,8 +53,8 @@ class PrometeoClient:
 
     @api_key.setter
     def api_key(self, api_key):
-        self._api_key = api_key
         self.logout()
+        self._api_key = api_key
         self._banking._api_key = api_key
 
     def _get_banking_client(self) -> ExtendedBankingClient:
@@ -65,6 +66,19 @@ class PrometeoClient:
     def login(self, provider, username, password, **kwargs) -> None:
         self._session = self._banking.login(provider, username, password, **kwargs)
 
-    def logout(self) -> None:
-        self._banking.logout(self._session.get_session_key())
-        self._session = None
+    def logout(self) -> bool:
+        """
+        Invalidate Prometeo session key.
+        Returns True if logout was successful.
+        """
+        # No intentar logout si el usuario no hizo login primero.
+        if self.status == LOGGED_IN_STATUS:
+            self._banking.logout(self._session.get_session_key())
+            self.status = LOGGED_OUT_STATUS
+            self._session = None
+            return True
+
+        return False
+
+    def get_providers(self) -> List[tuple]:
+        return self._banking.get_providers()

@@ -26,6 +26,12 @@ class BasePlugin(metaclass=abc.ABCMeta):
         self.out = output
         self.utils = Utils()
 
+    def close(self) -> None:
+        """
+        Este método será ejecutado al cerrar el cli.
+        """
+        pass
+
     @abc.abstractmethod
     def run(self, client: PrometeoClient) -> PrometeoClient:
         raise NotImplementedError

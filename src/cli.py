@@ -100,7 +100,7 @@ class CLI:
         Simplemente muestra el mensaje de
         opción inválida.
         """
-        self.out.yellow('You had one job...')
+        self.out.yellow('Invalid option.')
 
     def menu(self):
         # Print banner.
@@ -153,8 +153,15 @@ Options:
             # Opciones #
             # Terminar ejecución.
             if choice in ('exit', 'quit'):
-                # TODO: Cerrar sesión.
-                print('Quitting...')
+                self.out.info('Closing plugins...')
+                for plugin in self.plugins:
+                    try:
+                        plugin.close()
+                        self.out.success(f'<{plugin.name}> closed successfully')
+                    except Exception:
+                        self.out.warning(f'<{plugin.name}> did not close properly.')
+
+                print('See you! :)')
                 exit(0)
 
             # Mostrar descripciones para los plugins cargados.
@@ -183,7 +190,7 @@ Options:
                     # Ejecutar la opción de la lista de plugins.
                     # Los plugins manipulan el objeto client (sí, suena feo).
                     # Le agregar o modifican datos.
-                    self.plugins[index].run(self.client)
+                    self.plugins[index].run()
 
                 except (IndexError, ValueError):
                     self.print_invalid_option()

@@ -31,4 +31,8 @@ LOGGED_IN_STATUS = 'logged_in'
 LOGGED_OUT_STATUS = 'logged_out'
 PROMETEO_ERROR_STATUS = 'prometeo_error'
 
+# Filename.
+# You may set this to ':memory:'.
+CACHE_DB = 'test.sqlite3'
+
 # TODO: Leer config de las clases de cada plugin.

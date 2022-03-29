@@ -72,7 +72,7 @@ class Utils:
                 sys.stdout.write("Please respond with 'yes' or 'no' "
                                 "(or 'y' or 'n').\n")
 
-    def get_option(self, type: str = 'int', input_prefix: str = DEFAULT_INPUT_PREFIX) -> Any:
+    def get_option(self, type: str = 'int', required: bool = True, input_prefix: str = DEFAULT_INPUT_PREFIX) -> Any:
         """
         Author: Nanush7.
 
@@ -86,10 +86,16 @@ class Utils:
         # Ejecutar hasta conseguir un input válido.
         while True:
             user_input = input(input_prefix)
+            if user_input.strip() == '':
+                if required:
+                    self.out.yellow('Input required.')
+                    continue
+                else:
+                    return None
             try:
                 option = option_type(user_input)
             except TypeError:
-                self.out.yellow('Invalid input')
+                self.out.yellow('Invalid input.')
                 continue
 
             return option

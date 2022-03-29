@@ -10,19 +10,18 @@ class SessionPlugin(plugins.BasePlugin):
     name = 'Sessions'
     description = 'Basic login and logout plugin.'
 
-    def run(self, client):
-        self.client = client
+    def run(self):
         self.out.blue("""
     >> [1] Login.
     >> [2] Logout.
         """)
 
-        option = self.utils.get_option()
+        option = self.utils.get_option(required=False)
         try:
             if option == 1:
-                self.login()
+                self._login()
             elif option == 2:
-                self.logout()
+                self._logout()
             else:
                 self.out.yellow('Invalid option.')
 
@@ -34,27 +33,30 @@ class SessionPlugin(plugins.BasePlugin):
             # Que en algunos casos da KeyError al hacer el raise
             # de WrongCredentialsError.
             self.out.error('Wrong or missing credentials.')
-            self.client.status = WRONG_CREDENTIALS_STATUS
+            self._client.status = WRONG_CREDENTIALS_STATUS
 
         except prometeo_exc.PrometeoError:
             # Esto toma todas las demás exxeptions
             # de Prometeo.
             self.out.error('Internal Prometeo error.')
-            self.client.status = PROMETEO_ERROR_STATUS
+            self._client.status = PROMETEO_ERROR_STATUS
 
         except RequestsConnError:
             self.out.error('No internet connection.')
 
-    def login(self) -> None:
+    def close(self):
+        self._client.logout()
 
-        if self.client.status == LOGGED_IN_STATUS:
+    def _login(self) -> None:
+
+        if self._client.status == LOGGED_IN_STATUS:
             self.out.warning('Already logged in.')
             login_again = self.utils.query_yes_no('Do you want to logout and login again?', 'no')
             if not login_again:
                 return
             self.logout()
 
-        if self.client.environment == 'sandbox':
+        if self._client.environment == 'sandbox':
             provider = SANDBOX_CREDENTIALS['provider']
             username = SANDBOX_CREDENTIALS['username']
             password = SANDBOX_CREDENTIALS['password']
@@ -64,14 +66,15 @@ class SessionPlugin(plugins.BasePlugin):
             password = self.utils.get_password()
 
         # Este login guarda la session en el objeto client.
-        self.client.login(provider, username, password)
-        self.client.status = LOGGED_IN_STATUS
+        self._client.login(provider, username, password)
+        self._client.status = LOGGED_IN_STATUS
         self.out.success('Login successful')
 
-    def logout(self) -> None:
-        if self.client.status == LOGGED_IN_STATUS:
-            self.client.logout()
-            self.client.status = LOGGED_OUT_STATUS
+    def _logout(self) -> None:
+        logged_out = self._client.logout()
+        self._client.status = LOGGED_OUT_STATUS
+
+        if logged_out:
             self.out.success('Logout successful')
         else:
             self.out.error('Not logged in.')
