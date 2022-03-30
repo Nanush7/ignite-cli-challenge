@@ -5,7 +5,7 @@ from colorama import Fore, init
 
 class Output:
     """
-    Print with message level prefix (colors are optional).
+    Agregar prefijos y colores.
     """
     def __init__(self, color: bool = True):
         if color:

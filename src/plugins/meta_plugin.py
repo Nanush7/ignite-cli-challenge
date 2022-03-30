@@ -6,19 +6,22 @@ class MetaPlugin(plugins.BasePlugin):
 
     def run(self):
         self.out.info('Requesting provider list...')
-        providers = self._client.get_providers()
+        providers = self.client.get_providers()
         # Ordenar por país.
         providers.sort(key=lambda e : e.country)
 
         search_pattern = self.utils.get_option('str', False, 'Search pattern (leave blank to show all providers): ')
 
+        print('')
+
         # Mostrar todo.
         if search_pattern is None:
             search_results = providers
+
+        # Se busca alguna coincidencia en alguno de los campos
+        # de cada provider.
         else:
             search_results = []
-            # Se busca alguna coincidencia en alguno de los campos
-            # de cada provider.
             for provider in providers:
                 if search_pattern.strip().lower() in [field.lower() for field in provider]:
                     search_results.append(provider)
@@ -46,7 +49,7 @@ class MetaPlugin(plugins.BasePlugin):
         """
         Obtener detalles del provider y mostrarlos.
         """
-        provider = self._client._banking.get_provider_detail(provider_code)['provider']
+        provider = self.client._banking.get_provider_detail(provider_code)['provider']
 
         print(f"""
 --------------------------

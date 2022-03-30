@@ -10,7 +10,7 @@ class SessionPlugin(plugins.BasePlugin):
     plugin_name = 'Sessions'
     plugin_description = 'Basic login and logout plugin.'
 
-    def run(self): # TODO: select client. 
+    def run(self):
         self.out.blue("""
     >> [1] Login.
     >> [2] Logout.
@@ -33,31 +33,31 @@ class SessionPlugin(plugins.BasePlugin):
             # Que en algunos casos da KeyError al hacer el raise
             # de WrongCredentialsError.
             self.out.error('Wrong or missing credentials.')
-            self._client.status = WRONG_CREDENTIALS_STATUS
+            self.client.status = WRONG_CREDENTIALS_STATUS
 
         except prometeo_exc.PrometeoError:
             # Esto toma todas las demás exceptions
             # de Prometeo.
             self.out.error('Internal Prometeo error.')
-            self._client.status = PROMETEO_ERROR_STATUS
+            self.client.status = PROMETEO_ERROR_STATUS
 
         except RequestsConnError:
             self.out.error('No internet connection.')
 
     def close(self):
         # Hacer logout directo (omitir lo de self._logout).
-        self._client.logout()
+        self.client.logout()
 
     def _login(self) -> None:
 
-        if self._client.status == LOGGED_IN_STATUS:
+        if self.client.status == LOGGED_IN_STATUS:
             self.out.warning('Already logged in.')
             login_again = self.utils.query_yes_no('Do you want to logout and login again?', 'no')
             if not login_again:
                 return
-            self.logout()
+            self._logout()
 
-        if self._client.environment == 'sandbox':
+        if self.client.environment == 'sandbox':
             provider = SANDBOX_CREDENTIALS['provider']
             username = SANDBOX_CREDENTIALS['username']
             password = SANDBOX_CREDENTIALS['password']
@@ -67,13 +67,13 @@ class SessionPlugin(plugins.BasePlugin):
             password = self.utils.get_password()
 
         # Este login guarda la session en el objeto client.
-        self._client.login(provider, username, password)
-        self._client.status = LOGGED_IN_STATUS
+        self.client.login(provider, username, password)
+        self.client.status = LOGGED_IN_STATUS
         self.out.success('Login successful')
 
     def _logout(self) -> None:
-        logged_out = self._client.logout()
-        self._client.status = LOGGED_OUT_STATUS
+        logged_out = self.client.logout()
+        self.client.status = LOGGED_OUT_STATUS
 
         if logged_out:
             self.out.success('Logout successful')

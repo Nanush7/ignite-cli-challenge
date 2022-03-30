@@ -9,8 +9,7 @@ CLI_ROOT_DIR = Path(__file__).parent.parent
 API_KEY_PATH = join(CLI_ROOT_DIR, '.api_key')
 
 # Utilizado por la clase utils.Utils
-AVAILABLE_DATATYPES = ['int', 'float', 'str', 'chr']
-
+AVAILABLE_DATATYPES = ['int', 'float', 'str']
 DEFAULT_INPUT_PREFIX = '--> '
 
 DEFAULT_ENVIRONMENT = 'sandbox'
@@ -30,11 +29,3 @@ LOGGED_IN_STATUS = 'logged_in'
 # Esto no viene de Prometeo:
 LOGGED_OUT_STATUS = 'logged_out'
 PROMETEO_ERROR_STATUS = 'prometeo_error'
-
-DEFAULT_DAY_INTERVAL = 30
-MIN_WARNING_INTERVAL = 31
-
-# Añadir según lo requerido.
-AVAILABLE_CURRENCIES = ['UYU', 'USD']
-
-# TODO: Leer config de las clases de cada plugin.

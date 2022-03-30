@@ -10,17 +10,16 @@ from src.utils import Utils
 
 class CLI:
     """
-    CLI Class.
+    CLI main interface.
     """
     def __init__(self, out, api_key: str = ''):
-        self.out = out
         self.api_key = api_key
         self.environment = config.DEFAULT_ENVIRONMENT
         self.env_list = [
             key for key in ExtendedBankingClient.ENVIRONMENTS.keys()]
         self.plugins = []
 
-        # TODO: se van.
+        self.out = out
         self.client = None
         self.utils = Utils(self.out)
 
@@ -45,9 +44,13 @@ class CLI:
 
             print(f'Please, enter you api key.')
             print('You may provide your key using the -k argument instead (Not recommended).')
-            api_key = input('Your API key (leave blank to cancel): ')
+            api_key = self.utils.get_option(type='str', required=False, input_prefix='Your API key (leave blank to cancel): ')
 
-            if not api_key:
+            if api_key is None:
+                # Si era para cambiar, solo volver al menú.
+                if request_change:
+                    return
+                # Si no había api_key, da error.
                 raise MissingAPIKey
 
             # Por defecto es 'no', por razones de seguridad.
@@ -89,21 +92,15 @@ class CLI:
             print(f'[{index+1}] {env}.')
 
         # Ask for an option and change environment.
-        option = int(input('--> '))
-        if option < 1:
-            raise ValueError
+        option = self.utils.get_option()
+        if option < 1 or option > len(self.env_list):
+            self.out.yellow('Invalid option.')
+            return
 
         self.environment = self.client.environment = self.env_list[option-1]
 
-    def print_invalid_option(self) -> None:
-        """
-        Simplemente muestra el mensaje de
-        opción inválida.
-        """
-        self.out.yellow('Invalid option.')
-
     def menu(self):
-        # Print banner.
+        # Mostrar banner (antes limpia la pantalla).
         self.banner()
 
         # Mostrar opciones.
@@ -145,64 +142,62 @@ Options:
         if len(self.plugins) == 0:
             self.out.yellow('0 plugins loaded')
 
-        # Pedir elección al usuario hasta
-        # que proporcione una opción correcta.
-        while True:
-            choice = input('\n--> ').lower()
+        print('')
 
-            # Opciones #
-            # Terminar ejecución.
-            if choice in ('exit', 'quit'):
-                self.out.info('Closing plugins...')
-                for plugin in self.plugins:
-                    try:
-                        plugin.close()
-                        self.out.success(f'<{plugin.plugin_name}> closed successfully')
-                    except Exception:
-                        self.out.warning(f'<{plugin.plugin_name}> did not close properly.')
+        # Pedir elección al usuario.
+        choice = self.utils.get_option(type='str').lower()
 
-                print('See you! :)')
-                exit(0)
-
-            # Mostrar descripciones para los plugins cargados.
-            elif choice == 'd':
-                for plugin in self.plugins:
-                    print(f'{plugin.plugin_name}: {plugin.plugin_description}')
-
-            # Cambiar de environment
-            elif choice == 'c':
-                self.set_env()
-
-            # Cambiar api key.
-            elif choice == 'k':
+        # Opciones #
+        # Terminar ejecución.
+        if choice in ('exit', 'quit', 'e', 'q'):
+            self.out.info('Closing plugins...')
+            for plugin in self.plugins:
                 try:
-                    self.api_key = self.client.api_key = self.get_api_key(True)
-                except MissingAPIKey:
-                    pass
+                    plugin.close()
+                    self.out.success(f'<{plugin.plugin_name}> closed successfully.')
+                except Exception:
+                    self.out.warning(f'<{plugin.plugin_name}> did not close properly.')
 
-            # Ejecutar plugin.
-            else:
-                try:
-                    index = int(choice) - 1
-                    if index < 0:
-                        raise IndexError
+            print('\nSee you! :)\n')
+            exit(0)
 
-                    # Ejecutar la opción de la lista de plugins.
-                    # Los plugins manipulan el objeto client (sí, suena feo).
-                    # Le agregar o modifican datos.
-                    self.plugins[index].run()
+        # Mostrar descripciones para los plugins cargados.
+        elif choice == 'd':
+            for plugin in self.plugins:
+                print(f'{plugin.plugin_name}: {plugin.plugin_description}\n')
 
-                except (IndexError, ValueError):
-                    self.print_invalid_option()
-                    continue
+        # Cambiar de environment
+        elif choice == 'c':
+            self.set_env()
 
-            # Volver al menú.
-            break
+        # Cambiar api key.
+        elif choice == 'k':
+            self.api_key = self.client.api_key = self.get_api_key(request_change=True)
+
+        # Si no es ninguna de las opciones anteriores,
+        # intentar ejecutar un plugin de la lista.
+        else:
+            try:
+                index = int(choice) - 1
+
+                if index < 0 or index > len(self.plugins) - 1:
+                    raise IndexError
+
+            except (IndexError, ValueError):
+                self.out.yellow('Invalid option.')
+                return
+
+            # Ejecutar la opción de la lista de plugins.
+            # Los plugins manipulan el objeto client (sí, suena feo).
+            # Le agregar o modifican datos.
+            # Esto se deja fuera del try para evitar
+            # tomar los IndexError y ValueError de los plugins.
+            self.plugins[index].run()
 
     def run(self):
         # Pedir api_key al usuario
         # y obtener el cliente de Prometeo.
-        self.out.info('Creating Prometeo client.')
+        self.out.info('Creating Prometeo client...')
         if not self.api_key:
             # (si no se agregó -k)
             self.api_key = self.get_api_key()
@@ -210,7 +205,7 @@ Options:
         self.out.success(f'Created API client with {self.environment} scope.')
 
         # Obtener plugins.
-        self.out.info('Loading plugins.')
+        self.out.info('Loading plugins...')
         self.plugins = self.get_plugins()
 
         while True:

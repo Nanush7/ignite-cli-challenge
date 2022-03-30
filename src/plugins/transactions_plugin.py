@@ -1,19 +1,21 @@
 import datetime
-from secrets import choice
 
 import src.plugins as plugins
 from prometeo.banking.exceptions import BankingClientError
-from src.config import (AVAILABLE_CURRENCIES, DEFAULT_DAY_INTERVAL,
-                        LOGGED_IN_STATUS, MIN_WARNING_INTERVAL)
+from src.config import LOGGED_IN_STATUS
 from src.exceptions import ValidationError
 
+# Cambiar según lo requerido.
+AVAILABLE_CURRENCIES = ['UYU', 'USD']
+DEFAULT_DAY_INTERVAL = 30
+MIN_WARNING_INTERVAL = 31
 
 class TransactionsPlugin(plugins.BasePlugin):
     plugin_name = 'Transactions'
     plugin_description = 'Bank and credit card movements plugin. (!) Requires a session.'
 
     def run(self):
-        if self._client.status != LOGGED_IN_STATUS:
+        if self.client.status != LOGGED_IN_STATUS:
             self.out.error('You must have an active session. (Try using Sessions plugin).')
             return
 
@@ -29,7 +31,8 @@ Options:
         elif option == 2:
             accounts = self.get_credit_cards()
         else:
-            self.out.yellow('Invalid option, try again.')
+            if option is not None:
+                self.out.yellow('Invalid option, try again.')
             return
 
         # Pedir parámetros para los movimientos:
@@ -41,6 +44,7 @@ Options:
         if account_choice > len(accounts):
             self.out.yellow('Invalid choice. Try again.')
             return
+
         account_selected = accounts[account_choice-1]
         account_number = account_selected.number
 
@@ -91,9 +95,9 @@ Options:
         self.out.info('Requesting movements to Prometeo...')
         try:
             if option == 1:  # Cuenta de banco.
-                movements = self._client.get_movements(account_number, currency, start_date, end_date)
+                movements = self.client.get_movements(account_number, currency, start_date, end_date)
             elif option == 2:  # Tarjeta de crédito.
-                movements = self._client.get_credit_card_movements(account_number, currency, start_date, end_date)
+                movements = self.client.get_credit_card_movements(account_number, currency, start_date, end_date)
 
         except BankingClientError:
             self.out.error('No account found with the selected currency.')
@@ -105,7 +109,7 @@ Options:
     def get_bank_accounts(self):
         # Get user accounts.
         self.out.info('Requesting accounts to Prometeo...')
-        accounts = self._client.get_bank_accounts()
+        accounts = self.client.get_bank_accounts()
         for index, account in enumerate(accounts):
             print(f"""
 --------------------------
@@ -122,7 +126,7 @@ Options:
     def get_credit_cards(self):
         # Get user accounts.
         self.out.info('Requesting credit cards to Prometeo...')
-        accounts = self._client.get_credit_cards()
+        accounts = self.client.get_credit_cards()
         for index, account in enumerate(accounts):
             print(f"""
 --------------------------

@@ -29,8 +29,6 @@ def main():
     parser = argparse.ArgumentParser(description='PrometeoAPI CLI.')
 
     ### Crear grupos de argumentos ###
-    required = parser.add_argument_group(title='Basic arguments')
-    setup = parser.add_argument_group(title='Setup options')
     connection = parser.add_argument_group(title='Connection arguments')
     log_options = parser.add_argument_group(title='Log options')
 

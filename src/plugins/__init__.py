@@ -25,7 +25,7 @@ class BasePlugin(metaclass=abc.ABCMeta):
         cls.plugin_list.append(cls)
 
     def __init__(self, client, output):
-        self._client = client  # TODO: sacar unserscore después de un commit.
+        self.client = client
         self.out = output
         self.utils = Utils(self.out)
 
@@ -47,7 +47,6 @@ def load_module(path):
     module = util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-
 
 path = os.path.abspath(__file__)
 dirpath = os.path.dirname(path)
