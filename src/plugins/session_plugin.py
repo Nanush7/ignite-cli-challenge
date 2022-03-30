@@ -7,10 +7,10 @@ from src.config import (LOGGED_IN_STATUS, LOGGED_OUT_STATUS,
 from requests.exceptions import ConnectionError as RequestsConnError
 
 class SessionPlugin(plugins.BasePlugin):
-    name = 'Sessions'
-    description = 'Basic login and logout plugin.'
+    plugin_name = 'Sessions'
+    plugin_description = 'Basic login and logout plugin.'
 
-    def run(self):
+    def run(self): # TODO: select client. 
         self.out.blue("""
     >> [1] Login.
     >> [2] Logout.
@@ -23,7 +23,7 @@ class SessionPlugin(plugins.BasePlugin):
             elif option == 2:
                 self._logout()
             else:
-                self.out.yellow('Invalid option.')
+                return
 
         except prometeo_exc.UnauthorizedError:
             self.out.error('Invalid API key. Are you in the correct environment?')
@@ -36,7 +36,7 @@ class SessionPlugin(plugins.BasePlugin):
             self._client.status = WRONG_CREDENTIALS_STATUS
 
         except prometeo_exc.PrometeoError:
-            # Esto toma todas las demás exxeptions
+            # Esto toma todas las demás exceptions
             # de Prometeo.
             self.out.error('Internal Prometeo error.')
             self._client.status = PROMETEO_ERROR_STATUS
@@ -45,6 +45,7 @@ class SessionPlugin(plugins.BasePlugin):
             self.out.error('No internet connection.')
 
     def close(self):
+        # Hacer logout directo (omitir lo de self._logout).
         self._client.logout()
 
     def _login(self) -> None:
@@ -61,8 +62,8 @@ class SessionPlugin(plugins.BasePlugin):
             username = SANDBOX_CREDENTIALS['username']
             password = SANDBOX_CREDENTIALS['password']
         else:
-            provider = self.utils.get_option('str', 'provider: ')
-            username = self.utils.get_option('str', 'username: ')
+            provider = self.utils.get_option('str', input_prefix='provider: ')
+            username = self.utils.get_option('str', input_prefix='username: ')
             password = self.utils.get_password()
 
         # Este login guarda la session en el objeto client.

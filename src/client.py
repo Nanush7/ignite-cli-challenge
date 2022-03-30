@@ -1,6 +1,8 @@
 from typing import List
+
 from prometeo.banking.client import BankingAPIClient
-import prometeo
+from prometeo.banking.models import Account, Movement
+
 from src.config import LOGGED_IN_STATUS, LOGGED_OUT_STATUS
 
 SANDBOX_URL = 'https://banking.sandbox.prometeoapi.com/'
@@ -15,6 +17,14 @@ class ExtendedBankingClient(BankingAPIClient):
             'production': PRODUCTION_URL
         }
 
+    def get_provider_detail(self, provider_code):
+        """
+        Se sobreescribe este método para arreglar un problema
+        de la librería de prometeo.
+        """
+        data = self.call_api('GET', '/provider/{}/'.format(provider_code))
+        return data
+
 
 class PrometeoClient:
     """
@@ -26,12 +36,11 @@ class PrometeoClient:
     o el environment, se cierre la sesión y se cambien
     los campos correspondientes en cliente de banking.
     """
-    def __init__(self, api_key: str, environment: str, **additional_data):
+    def __init__(self, api_key: str, environment: str):
         # Usados en los plugins:
         self._api_key = api_key
         self._environment = environment
         self.status = LOGGED_OUT_STATUS
-        self.data = additional_data
 
         # Se manejan internamente:
         self._banking = self._get_banking_client()
@@ -82,3 +91,32 @@ class PrometeoClient:
 
     def get_providers(self) -> List[tuple]:
         return self._banking.get_providers()
+
+    def get_bank_accounts(self) -> List[Account]:
+        """
+        'Wrapper' para que el usuario no tenga que pasarle
+        la session key.
+        """
+        session_key = self.get_session_key()
+        return self._banking.get_accounts(session_key)
+
+    def get_credit_cards(self) -> List[Account]:
+        """
+        'Wrapper' para que el usuario no tenga que pasarle
+        la session key.
+        """
+        session_key = self.get_session_key()
+        return self._banking.get_credit_cards(session_key)
+
+    def get_movements(self, account_number, currency_code, start, end) -> List[Movement]:
+        session_key = self.get_session_key()
+        return self._banking.get_movements(session_key, account_number, currency_code, start, end)
+
+    def get_credit_card_movements(self, account_number, currency_code, start, end) -> List[Movement]:
+        session_key = self.get_session_key()
+        return self._banking.get_credit_card_movements(session_key, account_number, currency_code, start, end)
+
+    def get_session_key(self) -> str:
+        if self._session:
+            return self._session._session_key
+        return None

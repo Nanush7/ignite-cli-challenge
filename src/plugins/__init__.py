@@ -2,6 +2,7 @@ import abc
 import os
 from importlib import util
 
+import src.exceptions as exceptions
 from src.client import PrometeoClient
 from src.utils import Utils
 
@@ -11,8 +12,10 @@ class BasePlugin(metaclass=abc.ABCMeta):
     Base plugin class.
     """
     plugin_list = []
-    name: str = 'Unknown'  # Default.
-    description: str = 'No description.'
+    plugin_name: str = 'Unknown'  # Default.
+    plugin_description: str = 'No description.'
+    # Para usar en funciones de validación:
+    ValidationError = exceptions.ValidationError
 
     def __init_subclass__(cls):
         """
@@ -22,9 +25,9 @@ class BasePlugin(metaclass=abc.ABCMeta):
         cls.plugin_list.append(cls)
 
     def __init__(self, client, output):
-        self._client = client
+        self._client = client  # TODO: sacar unserscore después de un commit.
         self.out = output
-        self.utils = Utils()
+        self.utils = Utils(self.out)
 
     def close(self) -> None:
         """

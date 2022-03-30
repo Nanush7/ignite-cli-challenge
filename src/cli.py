@@ -22,7 +22,7 @@ class CLI:
 
         # TODO: se van.
         self.client = None
-        self.utils = Utils()
+        self.utils = Utils(self.out)
 
     def banner(self):
         banner_art = '''
@@ -71,9 +71,9 @@ class CLI:
         for plugin in BasePlugin.plugin_list:
             try:
                 instance = plugin(self.client, self.out)
-                self.out.success(f'<{plugin.name}> loaded.')
+                self.out.success(f'<{plugin.plugin_name}> loaded.')
             except Exception:
-                self.out.warning(f'Could not import <{plugin.name}> plugin.')
+                self.out.warning(f'Could not import <{plugin.plugin_name}> plugin.')
             else:
                 plugins.append(instance)
 
@@ -140,7 +140,7 @@ Options:
 
         # Mostrar plugins.
         for index, plugin in enumerate(self.plugins):
-            self.out.yellow(f' >> {[index + 1]} {plugin.name}')
+            self.out.yellow(f' >> {[index + 1]} {plugin.plugin_name}')
 
         if len(self.plugins) == 0:
             self.out.yellow('0 plugins loaded')
@@ -157,9 +157,9 @@ Options:
                 for plugin in self.plugins:
                     try:
                         plugin.close()
-                        self.out.success(f'<{plugin.name}> closed successfully')
+                        self.out.success(f'<{plugin.plugin_name}> closed successfully')
                     except Exception:
-                        self.out.warning(f'<{plugin.name}> did not close properly.')
+                        self.out.warning(f'<{plugin.plugin_name}> did not close properly.')
 
                 print('See you! :)')
                 exit(0)
@@ -167,7 +167,7 @@ Options:
             # Mostrar descripciones para los plugins cargados.
             elif choice == 'd':
                 for plugin in self.plugins:
-                    print(f'{plugin.name}: {plugin.description}')
+                    print(f'{plugin.plugin_name}: {plugin.plugin_description}')
 
             # Cambiar de environment
             elif choice == 'c':

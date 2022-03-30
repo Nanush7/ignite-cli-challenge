@@ -9,7 +9,7 @@ CLI_ROOT_DIR = Path(__file__).parent.parent
 API_KEY_PATH = join(CLI_ROOT_DIR, '.api_key')
 
 # Utilizado por la clase utils.Utils
-AVAILABLE_DATATYPES = ('int', 'float', 'str', 'chr')
+AVAILABLE_DATATYPES = ['int', 'float', 'str', 'chr']
 
 DEFAULT_INPUT_PREFIX = '--> '
 
@@ -31,8 +31,10 @@ LOGGED_IN_STATUS = 'logged_in'
 LOGGED_OUT_STATUS = 'logged_out'
 PROMETEO_ERROR_STATUS = 'prometeo_error'
 
-# Filename.
-# You may set this to ':memory:'.
-CACHE_DB = 'test.sqlite3'
+DEFAULT_DAY_INTERVAL = 30
+MIN_WARNING_INTERVAL = 31
+
+# Añadir según lo requerido.
+AVAILABLE_CURRENCIES = ['UYU', 'USD']
 
 # TODO: Leer config de las clases de cada plugin.

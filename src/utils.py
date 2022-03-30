@@ -24,20 +24,16 @@ SOFTWARE.
 
 import sys
 from getpass import GetPassWarning, getpass
-from typing import Any
+from typing import Any, Callable
 
+import src.exceptions as exceptions
 from src.config import AVAILABLE_DATATYPES, DEFAULT_INPUT_PREFIX
-
-
-class UnavailableType(Exception):
-    def __init__(self, message: str = 'Type unavailable'):
-        self.message = message
 
 
 class Utils:
 
-    def __init__(self):
-        pass
+    def __init__(self, output):
+        self.out = output
 
     def query_yes_no(self, question, default="yes"):
         """
@@ -72,15 +68,16 @@ class Utils:
                 sys.stdout.write("Please respond with 'yes' or 'no' "
                                 "(or 'y' or 'n').\n")
 
-    def get_option(self, type: str = 'int', required: bool = True, input_prefix: str = DEFAULT_INPUT_PREFIX) -> Any:
+    def get_option(self, type: str = 'int', required: bool = True, input_prefix: str = DEFAULT_INPUT_PREFIX, extra_validation: Callable = None) -> Any:
         """
         Author: Nanush7.
 
         Pedirle una entrada al usuario y validarla.
         """
         if type not in AVAILABLE_DATATYPES:
-            raise UnavailableType(f'{type} not in AVAILABLE_DATATYPES.')
+            raise exceptions.UnavailableType(f'{type} not in AVAILABLE_DATATYPES.')
 
+        # Obtiene la clase del tipo al que se quiere convertir.
         option_type = eval(type)
 
         # Ejecutar hasta conseguir un input válido.
@@ -94,7 +91,9 @@ class Utils:
                     return None
             try:
                 option = option_type(user_input)
-            except TypeError:
+                if callable(extra_validation):
+                    extra_validation(option)
+            except (ValueError, TypeError, exceptions.ValidationError):
                 self.out.yellow('Invalid input.')
                 continue
 
