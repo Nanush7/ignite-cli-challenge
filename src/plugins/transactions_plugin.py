@@ -10,13 +10,15 @@ AVAILABLE_CURRENCIES = ['UYU', 'USD']
 DEFAULT_DAY_INTERVAL = 30
 MIN_WARNING_INTERVAL = 31
 
+
 class TransactionsPlugin(plugins.BasePlugin):
     plugin_name = 'Transactions'
     plugin_description = 'Bank and credit card movements plugin. (!) Requires a session.'
 
     def run(self):
         if self.client.status != LOGGED_IN_STATUS:
-            self.out.error('You must have an active session. (Try using Sessions plugin).')
+            self.out.error(
+                'You must have an active session. (Try using Sessions plugin).')
             return
 
         print("""
@@ -38,7 +40,8 @@ Options:
         # Pedir parámetros para los movimientos:
 
         # Número de cuenta.
-        account_choice = self.utils.get_option(required=False, input_prefix='Select an account (blank to exit) -> ')
+        account_choice = self.utils.get_option(
+            required=False, input_prefix='Select an account (blank to exit) -> ')
         if account_choice is None:
             return
         if account_choice > len(accounts):
@@ -58,7 +61,8 @@ Options:
 
         # Fecha de inicio y fin.
         today = datetime.date.today()
-        default_start = self._date_to_str(today - datetime.timedelta(days=DEFAULT_DAY_INTERVAL))
+        default_start = self._date_to_str(
+            today - datetime.timedelta(days=DEFAULT_DAY_INTERVAL))
         default_end = self._date_to_str(today)
 
         start_date_str = self.utils.get_option(
@@ -95,9 +99,11 @@ Options:
         self.out.info('Requesting movements to Prometeo...')
         try:
             if option == 1:  # Cuenta de banco.
-                movements = self.client.get_movements(account_number, currency, start_date, end_date)
-            elif option == 2:  # Tarjeta de crédito.
-                movements = self.client.get_credit_card_movements(account_number, currency, start_date, end_date)
+                movements = self.client.get_movements(
+                    account_number, currency, start_date, end_date)
+            elif option == 2:  #  Tarjeta de crédito.
+                movements = self.client.get_credit_card_movements(
+                    account_number, currency, start_date, end_date)
 
         except BankingClientError:
             self.out.error('No account found with the selected currency.')

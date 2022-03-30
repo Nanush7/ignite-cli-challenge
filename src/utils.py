@@ -47,7 +47,7 @@ class Utils:
         The "answer" return value is True for "yes" or False for "no".
         """
         valid = {"yes": True, "y": True, "ye": True,
-                "no": False, "n": False}
+                 "no": False, "n": False}
         if default is None:
             prompt = " [y/n] "
         elif default == "yes":
@@ -66,7 +66,7 @@ class Utils:
                 return valid[choice]
             else:
                 sys.stdout.write("Please respond with 'yes' or 'no' "
-                                "(or 'y' or 'n').\n")
+                                 "(or 'y' or 'n').\n")
 
     def get_option(self, type: str = 'int', required: bool = True, input_prefix: str = DEFAULT_INPUT_PREFIX, extra_validation: Callable = None) -> Any:
         """
@@ -75,7 +75,8 @@ class Utils:
         Pedirle una entrada al usuario y validarla.
         """
         if type not in AVAILABLE_DATATYPES:
-            raise exceptions.UnavailableType(f'{type} not in AVAILABLE_DATATYPES.')
+            raise exceptions.UnavailableType(
+                f'{type} not in AVAILABLE_DATATYPES.')
 
         # Obtiene la clase del tipo al que se quiere convertir.
         option_type = eval(type)

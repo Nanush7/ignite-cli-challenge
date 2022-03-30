@@ -33,8 +33,10 @@ def main():
     log_options = parser.add_argument_group(title='Log options')
 
     ### Crear argumentos ###
-    log_options.add_argument('--no-color', help='Do not use colors for console output.', action='store_false', dest='no_colors')
-    connection.add_argument('-k', '--api-key', help='Your API key. NOT RECOMMENDED: this will save your key to your shell history file.', type=str, default='', dest='api_key')
+    log_options.add_argument(
+        '--no-color', help='Do not use colors for console output.', action='store_false', dest='no_colors')
+    connection.add_argument(
+        '-k', '--api-key', help='Your API key. NOT RECOMMENDED: this will save your key to your shell history file.', type=str, default='', dest='api_key')
 
     ### Parse arguments ###
     args = parser.parse_args()
@@ -47,6 +49,7 @@ def main():
     cli = CLI(out, api_key)
     print('')
     cli.run()
+
 
 if __name__ == '__main__':
     main()

@@ -1,4 +1,5 @@
 import src.plugins as plugins
+from prometeo.exceptions import UnauthorizedError
 
 class MetaPlugin(plugins.BasePlugin):
     plugin_name = 'Meta'
@@ -6,11 +7,18 @@ class MetaPlugin(plugins.BasePlugin):
 
     def run(self):
         self.out.info('Requesting provider list...')
-        providers = self.client.get_providers()
-        # Ordenar por país.
-        providers.sort(key=lambda e : e.country)
+        try:
+            providers = self.client.get_providers()
+        except UnauthorizedError:
+            self.out.error(
+                'Invalid API key. Are you in the correct environment?')
+            return
 
-        search_pattern = self.utils.get_option('str', False, 'Search pattern (leave blank to show all providers): ')
+        # Ordenar por país.
+        providers.sort(key=lambda e: e.country)
+
+        search_pattern = self.utils.get_option(
+            'str', False, 'Search pattern (leave blank to show all providers): ')
 
         print('')
 
@@ -36,8 +44,12 @@ class MetaPlugin(plugins.BasePlugin):
             print(f'[{index+1}] {provider.name} ({provider.country})')
 
         # Mostrar detalles de la opción elegida.
-        option = self.utils.get_option(required=False, input_prefix='(blank to exit, 0 to show all) --> ')
+        option = self.utils.get_option(
+            required=False, input_prefix='(blank to exit, 0 to show all) --> ')
         if option is None:
+            return
+        if option > len(search_results):
+            self.out.yellow('Invalid option.')
             return
         if option == 0:
             for provider in search_results:

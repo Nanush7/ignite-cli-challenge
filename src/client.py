@@ -12,10 +12,10 @@ PRODUCTION_URL = 'https://prometeo.qualia.uy'
 
 class ExtendedBankingClient(BankingAPIClient):
     ENVIRONMENTS = {
-            'sandbox': SANDBOX_URL,
-            'testing': TESTING_URL,
-            'production': PRODUCTION_URL
-        }
+        'sandbox': SANDBOX_URL,
+        'testing': TESTING_URL,
+        'production': PRODUCTION_URL
+    }
 
     def get_provider_detail(self, provider_code):
         """
@@ -36,6 +36,7 @@ class PrometeoClient:
     o el environment, se cierre la sesión y se cambien
     los campos correspondientes en cliente de banking.
     """
+
     def __init__(self, api_key: str, environment: str):
         # Usados en los plugins:
         self._api_key = api_key
@@ -73,7 +74,8 @@ class PrometeoClient:
         return banking
 
     def login(self, provider, username, password, **kwargs) -> None:
-        self._session = self._banking.login(provider, username, password, **kwargs)
+        self._session = self._banking.login(
+            provider, username, password, **kwargs)
 
     def logout(self) -> bool:
         """

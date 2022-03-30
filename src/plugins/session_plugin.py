@@ -6,6 +6,7 @@ from src.config import (LOGGED_IN_STATUS, LOGGED_OUT_STATUS,
 
 from requests.exceptions import ConnectionError as RequestsConnError
 
+
 class SessionPlugin(plugins.BasePlugin):
     plugin_name = 'Sessions'
     plugin_description = 'Basic login and logout plugin.'
@@ -26,7 +27,8 @@ class SessionPlugin(plugins.BasePlugin):
                 return
 
         except prometeo_exc.UnauthorizedError:
-            self.out.error('Invalid API key. Are you in the correct environment?')
+            self.out.error(
+                'Invalid API key. Are you in the correct environment?')
 
         except (prometeo_exc.WrongCredentialsError, KeyError):
             # KeyError es por un error de la librería de Prometeo,
@@ -52,7 +54,8 @@ class SessionPlugin(plugins.BasePlugin):
 
         if self.client.status == LOGGED_IN_STATUS:
             self.out.warning('Already logged in.')
-            login_again = self.utils.query_yes_no('Do you want to logout and login again?', 'no')
+            login_again = self.utils.query_yes_no(
+                'Do you want to logout and login again?', 'no')
             if not login_again:
                 return
             self._logout()

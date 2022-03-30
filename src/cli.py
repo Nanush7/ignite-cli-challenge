@@ -12,6 +12,7 @@ class CLI:
     """
     CLI main interface.
     """
+
     def __init__(self, out, api_key: str = ''):
         self.api_key = api_key
         self.environment = config.DEFAULT_ENVIRONMENT
@@ -43,8 +44,10 @@ class CLI:
         if not exists(config.API_KEY_PATH) or request_change:
 
             print(f'Please, enter you api key.')
-            print('You may provide your key using the -k argument instead (Not recommended).')
-            api_key = self.utils.get_option(type='str', required=False, input_prefix='Your API key (leave blank to cancel): ')
+            print(
+                'You may provide your key using the -k argument instead (Not recommended).')
+            api_key = self.utils.get_option(
+                type='str', required=False, input_prefix='Your API key (leave blank to cancel): ')
 
             if api_key is None:
                 # Si era para cambiar, solo volver al menú.
@@ -54,7 +57,8 @@ class CLI:
                 raise MissingAPIKey
 
             # Por defecto es 'no', por razones de seguridad.
-            save = self.utils.query_yes_no(f'Save API key? (it will be saved in {config.API_KEY_PATH})', 'no')
+            save = self.utils.query_yes_no(
+                f'Save API key? (it will be saved in {config.API_KEY_PATH})', 'no')
 
             if save:
                 with open(config.API_KEY_PATH, 'w') as file:
@@ -76,7 +80,8 @@ class CLI:
                 instance = plugin(self.client, self.out)
                 self.out.success(f'<{plugin.plugin_name}> loaded.')
             except Exception:
-                self.out.warning(f'Could not import <{plugin.plugin_name}> plugin.')
+                self.out.warning(
+                    f'Could not import <{plugin.plugin_name}> plugin.')
             else:
                 plugins.append(instance)
 
@@ -154,9 +159,11 @@ Options:
             for plugin in self.plugins:
                 try:
                     plugin.close()
-                    self.out.success(f'<{plugin.plugin_name}> closed successfully.')
+                    self.out.success(
+                        f'<{plugin.plugin_name}> closed successfully.')
                 except Exception:
-                    self.out.warning(f'<{plugin.plugin_name}> did not close properly.')
+                    self.out.warning(
+                        f'<{plugin.plugin_name}> did not close properly.')
 
             print('\nSee you! :)\n')
             exit(0)
@@ -172,7 +179,8 @@ Options:
 
         # Cambiar api key.
         elif choice == 'k':
-            self.api_key = self.client.api_key = self.get_api_key(request_change=True)
+            self.api_key = self.client.api_key = self.get_api_key(
+                request_change=True)
 
         # Si no es ninguna de las opciones anteriores,
         # intentar ejecutar un plugin de la lista.
