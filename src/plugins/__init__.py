@@ -36,7 +36,7 @@ class BasePlugin(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def run(self, client: PrometeoClient) -> PrometeoClient:
+    def run(self) -> None:
         raise NotImplementedError
 
 
