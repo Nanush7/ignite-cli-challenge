@@ -1,6 +1,10 @@
 # ignite-cli-challenge
 Prometeo Command Line Interface.
 
+## Preview
+
+<img width="849" alt="Captura de Pantalla 2022-03-30 a la(s) 23 04 04" src="https://user-images.githubusercontent.com/59543882/160961670-fe461589-ffaf-4743-9085-64e0a44b7446.png">
+
 ## Requirements
  - Python >= 3.8 (tested on 3.8.12).
 
@@ -17,7 +21,7 @@ You may see available options with `python3 main.py -h`.
 
 ## Creating plugins
 
-This repo comes with 3 basic plugins, but you may create your own using the BasePlugin class.
+This repo comes with 3 basic plugins (Sessions, Meta and Transactions), but you may create your own using the BasePlugin class.
 
 First, you must create a file inside the plugins folder named like `*_plugin.py`.
 
@@ -47,7 +51,9 @@ class YourPluginName(plugins.BasePlugin):
         # ...
 ```
 
-The `BasePlugin` class provides the following attributes that you may use in your plugin class:
+Once you have done this, you are ready! Your plugin will automatically show up in the CLI menu. If you choose the option corresponding to your plugin, the CLI will execute the run() method of your BasePlugin class.
+
+The `BasePlugin` class provides a few attributes that you may use in your plugin class:
 
 1. `self.client`: this is a PrometeoClient instance which provides API methods. Like login, logout, providers, etc.
 
