@@ -91,4 +91,4 @@ class YourPluginName(plugins.BasePlugin):
         # You should raise this exception somewhere.
  ```
 
-**RECOMMENDATION**: read output.py and utils.py to see more methods available.
+**RECOMMENDATION**: read output.py and utils.py to see other methods you may use.
