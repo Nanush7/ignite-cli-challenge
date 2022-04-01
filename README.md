@@ -5,6 +5,10 @@ Prometeo Command Line Interface.
 
 <img width="849" alt="Captura de Pantalla 2022-03-30 a la(s) 23 04 04" src="https://user-images.githubusercontent.com/59543882/160961670-fe461589-ffaf-4743-9085-64e0a44b7446.png">
 
+This CLI works based on "plugins". Plugins are loaded and displayed in the menu. See "Creating plugins" below.
+
+The color scheme may change depending on your terminal settings.
+
 ## Requirements
  - Python >= 3.8 (tested on 3.8.12).
 
@@ -21,7 +25,7 @@ You may see available options with `python3 main.py -h`.
 
 ## Creating plugins
 
-This repo comes with 3 basic plugins (Sessions, Meta and Transactions), but you may create your own using the BasePlugin class.
+This repo comes with 3 basic plugins (Sessions, Meta and Transactions, the ones you can see in the preview), but you may create your own using the BasePlugin class.
 
 First, you must create a file inside the plugins folder named like `*_plugin.py`.
 

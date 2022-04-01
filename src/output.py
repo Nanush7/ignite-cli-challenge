@@ -13,9 +13,9 @@ class Output:
             init(autoreset=True)
             self.colors = {
                 'red': Fore.LIGHTRED_EX,
-                'green': Fore.GREEN,
-                'yellow': Fore.YELLOW,
-                'blue': Fore.BLUE
+                'green': Fore.LIGHTGREEN_EX,
+                'yellow': Fore.LIGHTYELLOW_EX,
+                'blue': Fore.LIGHTBLUE_EX
             }
         else:
             self.colors = {
